@@ -11,6 +11,26 @@
         body { font-family: 'Inter', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); }
     </style>
+  <!-- Подключаем Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+      // Конфигурация вашего проекта Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyBNaq4tbN80dPWofFiUJ4v4qt80o5RNk4",
+        authDomain: "medlife-6cf4e.firebaseapp.com",
+        projectId: "medlife-6cf4e",
+        storageBucket: "medlife-6cf4e.firebasestorage.app",
+        messagingSenderId: "196230603767",
+        appId: "1:196230603767:web:0f03116b7006b2288304f2",
+        measurementId: "G-B2TVJ6KD39"
+      };
+
+      // Инициализация Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
