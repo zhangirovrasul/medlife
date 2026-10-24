@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDLIFE — Книги и учебники для студентов</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 glass border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="renderBooks()">
+                    <div class="w-10 h-10 rounded-full border-2 border-blue-600 overflow-hidden flex items-center justify-center bg-blue-900 text-white shadow-md font-bold text-xs">
+                        MED
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">MEDLIFE</span>
+                        <span class="text-[10px] block text-slate-500 font-medium -mt-1">Абу али ибни Сино</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openAdminAuthModal()" class="px-3 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Админ</span>
+                    </button>
+
+                    <button onclick="openCartModal()" class="relative bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span id="cart-badge" class="bg-amber-400 text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Banner -->
+        <div class="mb-6 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 text-white p-6 shadow-xl">
+            <div class="flex flex-wrap gap-2 mb-2">
+                <span class="inline-block px-3 py-1 bg-amber-400 text-slate-900 rounded-full text-xs font-bold">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Мин. заказ — от 5 шт. книг
+                </span>
+                <span class="inline-block px-3 py-1 bg-amber-500/30 text-amber-200 rounded-full text-xs font-bold border border-amber-400/30">
+                    <i class="fa-solid fa-wallet mr-1"></i> Предоплата — минимум 50%
+                </span>
+                <span class="inline-block px-3 py-1 bg-emerald-500/30 text-emerald-200 rounded-full text-xs font-semibold border border-emerald-400/30">
+                    <i class="fa-solid fa-clock mr-1"></i> Караболо (07:30–08:00 / 11:30–12:30) — 5 TJS | Цирк (после 14:00) — Бесплатно
+                </span>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight mb-2">Учебники и печатные материалы MEDLIFE</h1>
+            <p class="text-blue-100 text-xs sm:text-sm">Заказывайте учебные материалы и тесты по курсам обучения с доставкой.</p>
+        </div>
+
+        <!-- Filter & Search -->
+        <div class="mb-6 flex flex-col md:flex-row gap-3 justify-between items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <!-- Поиск -->
+            <div class="relative w-full md:w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="search-input" onkeyup="filterBooks()" placeholder="Поиск книги..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Фильтр по курсам -->
+            <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1" id="course-filters">
+                <button onclick="setCourseFilter('all')" class="course-btn active px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-blue-600 text-white transition">Все курсы</button>
+                <button onclick="setCourseFilter('1')" class="course-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-600 hover:bg-slate-200 transition">1 курс</button>
+                <button onclick="setCourseFilter('2')" class="course-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-600 hover:bg-slate-200 transition">2 курс</button>
+                <button onclick="setCourseFilter('3')" class="course-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-600 hover:bg-slate-200 transition">3 курс</button>
+                <button onclick="setCourseFilter('4')" class="course-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-600 hover:bg-slate-200 transition">4 курс</button>
+                <button onclick="setCourseFilter('5')" class="course-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-600 hover:bg-slate-200 transition">5 курс</button>
+                <button onclick="setCourseFilter('6')" class="course-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-600 hover:bg-slate-200 transition">6 курс</button>
+            </div>
+        </div>
+
+        <!-- Books Grid -->
+        <div id="books-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    </main>
+
+    <!-- VIEWER MODAL FOR DIRECT FILES/IMAGES -->
+    <div id="file-viewer-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
+            <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800" id="viewer-title">Просмотр примера</h3>
+                    <p class="text-[10px] text-slate-400">Пример страниц из книги</p>
+                </div>
+                <button onclick="closeViewerModal()" class="text-slate-400 p-1 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="flex-grow bg-slate-900/5 flex items-center justify-center p-4 overflow-auto">
+                <iframe id="viewer-frame" class="w-full h-full border-none hidden"></iframe>
+                <img id="viewer-img" class="max-h-[70vh] max-w-full object-contain rounded-lg shadow-md border hidden bg-white">
+            </div>
+        </div>
+    </div>
+
+    <!-- CART MODAL -->
+    <div id="cart-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-cart-shopping text-blue-600"></i> Оформление заказа</h3>
+                <button onclick="closeCartModal()" class="text-slate-400 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="p-5 overflow-y-auto flex-grow space-y-4">
+                <div id="cart-step-1">
+                    <div id="min-order-alert" class="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-xs text-amber-800">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>
+                        <span>Минимальный объем заказа — <strong>от 5 шт. книг</strong>.</span>
+                    </div>
+
+                    <div id="cart-items-container" class="divide-y divide-slate-100"></div>
+                    <div id="empty-cart-msg" class="hidden text-center py-8 text-slate-400 text-xs">Корзина пуста</div>
+                </div>
+
+                <div id="cart-step-2" class="hidden space-y-3 text-xs">
+                    <h4 class="font-bold text-slate-800 border-b pb-1">1. Данные студента</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="cust-name" placeholder="ФИО *" class="p-2 border rounded-lg">
+                        <input type="tel" id="cust-phone" placeholder="Телефон *" class="p-2 border rounded-lg">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="cust-city" placeholder="Город *" class="p-2 border rounded-lg">
+                        <input type="text" id="cust-address" placeholder="ВУЗ / Курс / Общежитие *" class="p-2 border rounded-lg">
+                    </div>
+
+                    <h4 class="font-bold text-slate-800 border-b pb-1">2. Способ получения</h4>
+                    <select id="delivery-method" onchange="calculateTotal()" class="w-full p-2 border rounded-lg bg-white font-semibold text-slate-700"></select>
+
+                    <h4 class="font-bold text-slate-800 border-b pb-1">3. Оплата и Чек</h4>
+                    <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-credit-card text-amber-600 text-sm"></i>
+                        <span>Условие заказа: <strong>Предоплата минимум 50%</strong> (или 100% по желанию).</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <button onclick="selectPayment('dcity')" class="p-2 border rounded-lg font-bold text-center hover:bg-blue-50">D.City</button>
+                        <button onclick="selectPayment('alif')" class="p-2 border rounded-lg font-bold text-center hover:bg-blue-50">Alif Mobi</button>
+                        <button onclick="selectPayment('amonat')" class="p-2 border rounded-lg font-bold text-center hover:bg-blue-50">Amonat</button>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl">
+                        <p class="font-bold text-blue-900" id="pay-title">Переведите сумму (мин. 50%) на кошелёк/карту:</p>
+                        <div class="font-mono font-bold text-blue-700 my-1" id="pay-number">977770000 (D.City)</div>
+                    </div>
+
+                    <div class="border-2 border-dashed border-slate-300 p-3 rounded-xl text-center bg-slate-50">
+                        <label class="block cursor-pointer">
+                            <i class="fa-solid fa-file-arrow-up text-xl text-blue-600 mb-1"></i>
+                            <span class="block text-xs font-bold text-slate-700">Загрузить чек оплаты (скриншот/фото) *</span>
+                            <input type="file" id="receipt-file" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                        </label>
+                        <p id="file-name" class="text-[11px] text-emerald-600 font-bold mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-5 py-3 bg-slate-50 border-t flex justify-between items-center">
+                <div>
+                    <span class="text-[10px] text-slate-400 block">Общая сумма заказа:</span>
+                    <span class="text-xl font-extrabold text-blue-600" id="cart-total-price">0 TJS</span>
+                    <span class="text-[10px] text-amber-600 font-bold block" id="cart-min-prepay">(Мин. предоплата 50%: 0 TJS)</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btn-cart-back" onclick="goToCartStep(1)" class="hidden px-3 py-1.5 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Назад</button>
+                    <button id="btn-cart-next" onclick="goToCartStep(2)" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold">Оформить</button>
+                    <button id="btn-cart-confirm" onclick="submitOrder()" class="hidden px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">Отправить заказ с чеком</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN AUTH MODAL -->
+    <div id="admin-auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-5 max-w-xs w-full shadow-2xl relative">
+            <button onclick="closeAdminAuthModal()" class="absolute right-3 top-2 text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="font-bold text-center text-slate-800 mb-3">Вход для администратора</h3>
+            <input type="password" id="admin-pass-input" placeholder="Пароль (admin123)" class="w-full p-2 border rounded-lg text-xs mb-3">
+            <button onclick="loginAdmin()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg text-xs">Войти</button>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="admin-panel-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-xs">
+            <div class="px-5 py-3 bg-indigo-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm"><i class="fa-solid fa-sliders"></i> Управление магазином</h3>
+                <button onclick="closeAdminPanelModal()" class="text-indigo-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-4 bg-slate-50">
+                <!-- Add New Book -->
+                <div class="bg-white p-3 rounded-xl border space-y-2">
+                    <h4 class="font-bold text-slate-800">Добавить новую книгу в каталог:</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="add-title" placeholder="Название книги *" class="p-2 border rounded">
+                        <input type="text" id="add-publisher" placeholder="Издательство (напр. MEDLIFE / ТГМУ)" class="p-2 border rounded">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">Выберите курс *:</label>
+                            <select id="add-course" class="w-full p-2 border rounded bg-white font-bold text-slate-700">
+                                <option value="1">1 курс</option>
+                                <option value="2">2 курс</option>
+                                <option value="3">3 курс</option>
+                                <option value="4">4 курс</option>
+                                <option value="5" selected>5 курс</option>
+                                <option value="6">6 курс</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">Категория:</label>
+                            <input type="text" id="add-cat" placeholder="Анатомия, Педиатрия..." class="w-full p-2 border rounded">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 bg-blue-50 p-2 rounded border border-blue-100">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Цена Ч/Б печать (TJS) *:</label>
+                            <input type="number" id="add-price-bw" placeholder="Пример: 25" class="w-full p-2 border rounded bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-blue-700 mb-1">Цена Цветная печать (TJS) *:</label>
+                            <input type="number" id="add-price-color" placeholder="Пример: 45" class="w-full p-2 border rounded bg-white">
+                        </div>
+                    </div>
+
+                    <div class="border p-2 rounded bg-slate-50">
+                        <label class="block font-semibold mb-1 text-slate-700">1. Обложка книги (из галереи):</label>
+                        <input type="file" id="add-cover-file" accept="image/*" class="w-full text-xs">
+                    </div>
+
+                    <div class="border p-2 rounded bg-slate-50">
+                        <label class="block font-semibold mb-1 text-slate-700">2. Пример страниц PDF/фото (из галереи):</label>
+                        <input type="file" id="add-sample-file" accept="image/*,application/pdf" class="w-full text-xs">
+                    </div>
+
+                    <button onclick="addNewBook()" class="bg-emerald-600 text-white font-bold px-3 py-1.5 rounded w-full mt-2">Добавить книгу</button>
+                </div>
+
+                <!-- Manage Existing Books (Delete) -->
+                <div class="bg-white p-3 rounded-xl border space-y-2">
+                    <h4 class="font-bold text-slate-800">Список книг в каталоге (Управление / Удаление):</h4>
+                    <div id="admin-books-list" class="divide-y divide-slate-100 max-h-48 overflow-y-auto border rounded p-2"></div>
+                </div>
+
+                <!-- Payment Requisites -->
+                <div class="bg-white p-3 rounded-xl border space-y-2">
+                    <h4 class="font-bold text-slate-800">Реквизиты кошельков:</h4>
+                    <input type="text" id="req-dcity" placeholder="D.City номер" class="w-full p-2 border rounded">
+                    <input type="text" id="req-alif" placeholder="Alif Mobi номер" class="w-full p-2 border rounded">
+                    <input type="text" id="req-amonat" placeholder="Amonat номер" class="w-full p-2 border rounded">
+                    <button onclick="saveRequisites()" class="bg-blue-600 text-white font-bold px-3 py-1.5 rounded">Сохранить реквизиты</button>
+                </div>
+
+                <!-- Telegram Settings -->
+                <div class="bg-white p-3 rounded-xl border space-y-2">
+                    <h4 class="font-bold text-slate-800">Настройки Telegram Бот:</h4>
+                    <input type="text" id="tg-token-input" placeholder="Bot Token (7123456789:AAExxxx...)" class="w-full p-2 border rounded font-mono">
+                    <input type="text" id="tg-chatid-input" placeholder="Ваш Chat ID (123456789)" class="w-full p-2 border rounded font-mono">
+                    <button onclick="saveTgSettings()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg text-xs">Сохранить Telegram</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MIN_ORDER_COUNT = 5;
+
+        const DEFAULT_BOOKS = [
+            { 
+                id: 1, 
+                title: 'Анатомия N1. Устухонҳо ва Сутунмӯҳра', 
+                publisher: 'MEDLIFE Press', 
+                course: '1',
+                category: 'Анатомия', 
+                priceBW: 25, 
+                priceColor: 45, 
+                image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=400&q=80',
+                sampleData: null
+            },
+            { 
+                id: 2, 
+                title: 'Педиатрия: 200 Тестов и Ответов', 
+                publisher: 'MEDLIFE', 
+                course: '5',
+                category: 'Педиатрия', 
+                priceBW: 20, 
+                priceColor: 35, 
+                image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80',
+                sampleData: null 
+            }
+        ];
+
+        const DEFAULT_DELIVERY = [
+            { id: 1, name: '📍 Самовывоз возле Цирка (после 14:00)', price: 0 },
+            { id: 2, name: '🏥 Доставка до Караболо (07:30–08:00 / 11:30–12:30)', price: 5 },
+            { id: 3, name: '🚚 Стандартная доставка по Душанбе', price: 15 },
+            { id: 4, name: '⚡ Срочная Экспресс-доставка', price: 25 }
+        ];
+
+        let books = JSON.parse(localStorage.getItem('mb_books')) || DEFAULT_BOOKS;
+        let selectedFormats = {};
+        let deliveryOptions = DEFAULT_DELIVERY;
+        let paymentReqs = JSON.parse(localStorage.getItem('mb_reqs')) || {
+            dcity: '977770000 (D.City)',
+            alif: '+992 900 11 22 33 (Alif)',
+            amonat: '2024 1000 9988 (Amonat)'
+        };
+        let tgSettings = JSON.parse(localStorage.getItem('mb_tg')) || { token: '', chatId: '' };
+
+        let cart = [];
+        let selectedPayment = 'dcity';
+        let currentCourseFilter = 'all';
+        let receiptFile = null;
+
+        window.onload = () => {
+            renderBooks();
+            loadAdminInputs();
+        };
+
+        function renderBooks() {
+            const grid = document.getElementById('books-grid');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filteredBooks = books.filter(b => {
+                const matchesCourse = (currentCourseFilter === 'all' || b.course === currentCourseFilter);
+                const matchesSearch = b.title.toLowerCase().includes(search) || (b.category && b.category.toLowerCase().includes(search));
+                return matchesCourse && matchesSearch;
+            });
+
+            if (filteredBooks.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-book-open text-3xl mb-2 block"></i>
+                        <p class="text-xs">Книги для этого курса пока не добавлены.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredBooks.forEach(book => {
+                if (!selectedFormats[book.id]) selectedFormats[book.id] = 'bw';
+                
+                const isColor = selectedFormats[book.id] === 'color';
+                const currentPrice = isColor ? book.priceColor : book.priceBW;
+                const hasSample = book.sampleData;
+
+                const sampleBtn = hasSample 
+                   ? `<button onclick="openViewerModal(${book.id})" class="w-full py-1 text-[11px] text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg font-bold mb-2 transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-image text-blue-500"></i> Пример страниц</button>` 
+                   : '';
+                
+                grid.innerHTML += `
+                   <div class="bg-white rounded-xl border p-3 flex flex-col justify-between shadow-sm hover:shadow-md transition relative">
+                       <div>
+                           <div class="relative mb-2">
+                               <img src="${book.image}" class="h-36 w-full object-cover rounded-lg">
+                               <span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow">
+                                   ${book.course ? book.course + ' курс' : 'Учебник'}
+                               </span>
+                           </div>
+
+                           <h3 class="font-bold text-xs line-clamp-2">${book.title}</h3>
+                           <p class="text-[10px] text-blue-700 font-semibold mb-2"><i class="fa-solid fa-building-columns mr-1"></i> ${book.publisher || 'MEDLIFE'}</p>
+                           ${sampleBtn}
+
+                           <div class="bg-slate-50 p-1.5 rounded-lg border my-2 flex items-center justify-between text-[11px]">
+                               <span class="font-semibold text-slate-600">Печать:</span>
+                               <div class="flex bg-white rounded border p-0.5">
+                                   <button onclick="setBookFormat(${book.id}, 'bw')" class="px-2 py-0.5 rounded font-bold transition ${!isColor ? 'bg-slate-800 text-white' : 'text-slate-500'}">Ч/Б</button>
+                                   <button onclick="setBookFormat(${book.id}, 'color')" class="px-2 py-0.5 rounded font-bold transition ${isColor ? 'bg-blue-600 text-white' : 'text-slate-500'}">Цветная</button>
+                               </div>
+                           </div>
+                       </div>
+
+                       <div class="flex items-center justify-between border-t pt-2">
+                           <div>
+                               <span class="font-extrabold text-blue-600 text-sm">${currentPrice} TJS</span>
+                               <span class="text-[9px] block text-slate-400 font-normal">${isColor ? 'Цветная' : 'Черно-белая'}</span>
+                           </div>
+                           <button onclick="addToCart(${book.id})" class="bg-blue-600 text-white px-2.5 py-1 rounded-lg font-bold text-xs hover:bg-blue-700 transition"><i class="fa-solid fa-plus"></i> В корзину</button>
+                       </div>
+                   </div>
+                `;
+            });
+        }
+
+        function setCourseFilter(course) {
+            currentCourseFilter = course;
+            document.querySelectorAll('.course-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'active');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+
+            event.target.classList.remove('bg-slate-100', 'text-slate-600');
+            event.target.classList.add('bg-blue-600', 'text-white', 'active');
+
+            renderBooks();
+        }
+
+        function setBookFormat(bookId, format) {
+            selectedFormats[bookId] = format;
+            renderBooks();
+        }
+
+        function filterBooks() { renderBooks(); }
+
+        // --- VIEWER MODAL ---
+        function openViewerModal(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (!book || !book.sampleData) return;
+
+            document.getElementById('viewer-title').innerText = book.title;
+            const frame = document.getElementById('viewer-frame');
+            const img = document.getElementById('viewer-img');
+
+            if (book.sampleType === 'application/pdf') {
+                frame.src = book.sampleData;
+                frame.classList.remove('hidden');
+                img.classList.add('hidden');
+            } else {
+                img.src = book.sampleData;
+                img.classList.remove('hidden');
+                frame.classList.add('hidden');
+            }
+            document.getElementById('file-viewer-modal').classList.remove('hidden');
+        }
+
+        function closeViewerModal() {
+            document.getElementById('viewer-frame').src = '';
+            document.getElementById('file-viewer-modal').classList.add('hidden');
+        }
+
+        // --- CART FUNCTIONS ---
+        function addToCart(id) {
+            const book = books.find(x => x.id === id);
+            const format = selectedFormats[id] || 'bw';
+            const isColor = format === 'color';
+            const price = isColor ? book.priceColor : book.priceBW;
+            const formatName = isColor ? 'Цветная' : 'Черно-белая';
+
+            const cartItemId = `${id}_${format}`;
+            const item = cart.find(x => x.cartItemId === cartItemId);
+
+            if (item) {
+                item.qty++;
+            } else {
+                cart.push({
+                    cartItemId,
+                    id,
+                    title: `${book.title} (${formatName})`,
+                    price,
+                    formatName,
+                    qty: 1
+                });
+            }
+            updateCartBadge();
+        }
+
+        function updateCartBadge() {
+            const totalCount = cart.reduce((a,b)=>a+b.qty, 0);
+            document.getElementById('cart-badge').innerText = totalCount;
+        }
+
+        function openCartModal() {
+            renderCartItems();
+            renderDeliverySelect();
+            goToCartStep(1);
+            document.getElementById('cart-modal').classList.remove('hidden');
+        }
+        function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                document.getElementById('empty-cart-msg').classList.remove('hidden');
+                calculateTotal();
+                return;
+            }
+
+            document.getElementById('empty-cart-msg').classList.add('hidden');
+            cart.forEach(item => {
+                container.innerHTML += `
+                    <div class="py-2.5 flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800">${item.title}</p>
+                            <span class="text-blue-600 font-bold">${item.price} TJS</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeQty('${item.cartItemId}', -1)" class="w-6 h-6 bg-slate-100 rounded font-bold text-slate-600 text-xs">-</button>
+                            <span class="font-bold">${item.qty}</span>
+                            <button onclick="changeQty('${item.cartItemId}', 1)" class="w-6 h-6 bg-slate-100 rounded font-bold text-slate-600 text-xs">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            calculateTotal();
+        }
+
+        function changeQty(cartItemId, delta) {
+            const item = cart.find(x => x.cartItemId === cartItemId);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) cart = cart.filter(x => x.cartItemId !== cartItemId);
+            }
+            updateCartBadge();
+            renderCartItems();
+        }
+
+        function renderDeliverySelect() {
+            const sel = document.getElementById('delivery-method');
+            sel.innerHTML = '';
+            deliveryOptions.forEach(d => {
+                const priceText = d.price === 0 ? 'Бесплатно' : `${d.price} TJS`;
+                sel.innerHTML += `<option value="${d.id}">${d.name} — ${priceText}</option>`;
+            });
+        }
+
+        function calculateTotal() {
+            const booksTotal = cart.reduce((a,b)=>a+(b.price*b.qty), 0);
+            const delId = parseInt(document.getElementById('delivery-method')?.value || 1);
+            const del = deliveryOptions.find(x=>x.id === delId) || { price: 0 };
+            const grandTotal = booksTotal + del.price;
+            const minPrepay = (grandTotal / 2).toFixed(1);
+
+            document.getElementById('cart-total-price').innerText = `${grandTotal} TJS`;
+            document.getElementById('cart-min-prepay').innerText = `(Мин. предоплата 50%: ${minPrepay} TJS)`;
+            return { booksTotal, delName: del.name, delPrice: del.price, grandTotal, minPrepay };
+        }
+
+        function goToCartStep(step) {
+            const totalBooks = cart.reduce((a,b)=>a+b.qty, 0);
+
+            if (step === 2) {
+                if (cart.length === 0) return alert('Ваша корзина пуста!');
+                if (totalBooks < MIN_ORDER_COUNT) {
+                    return alert(`Минимальный заказ — ${MIN_ORDER_COUNT} книг!\nВ вашей корзине сейчас: ${totalBooks} шт.\nДобавьте ещё ${MIN_ORDER_COUNT - totalBooks} шт., чтобы оформить заказ.`);
+                }
+            }
+
+            document.getElementById('cart-step-1').classList.toggle('hidden', step !== 1);
+            document.getElementById('cart-step-2').classList.toggle('hidden', step !== 2);
+            document.getElementById('btn-cart-back').classList.toggle('hidden', step === 1);
+            document.getElementById('btn-cart-next').classList.toggle('hidden', step === 2);
+            document.getElementById('btn-cart-confirm').classList.toggle('hidden', step === 1);
+        }
+
+        function selectPayment(type) {
+            selectedPayment = type;
+            document.getElementById('pay-number').innerText = paymentReqs[type] || '';
+        }
+
+        function handleFileSelect(e) {
+            receiptFile = e.target.files[0];
+            if (receiptFile) {
+                document.getElementById('file-name').innerText = `Файл прикреплен: ${receiptFile.name}`;
+            }
+        }
+
+        async function submitOrder() {
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const city = document.getElementById('cust-city').value;
+            const address = document.getElementById('cust-address').value;
+
+            if (!name || !phone || !city || !address || !receiptFile) {
+                return alert('Заполните все поля и прикрепите чек оплаты!');
+            }
+
+            if (!tgSettings.token || !tgSettings.chatId) {
+                return alert('Укажите Bot Token в панели управления!');
+            }
+
+            const totals = calculateTotal();
+            let itemsList = cart.map((c, i) => `${i + 1}. *${c.title}* — ${c.qty} шт. (${c.price * c.qty} TJS)`).join('\n');
+
+            const caption = `🛍 *НОВЫЙ ЗАКАЗ (MEDLIFE)*\n\n` +
+                `👤 *ФИО:* ${name}\n` +
+                `📞 *Тел:* ${phone}\n` +
+                `📍 *Город / Адрес:* ${city}, ${address}\n` +
+                `🚚 *Способ получения:* ${totals.delName}\n` +
+                `💳 *Оплата:* ${selectedPayment.toUpperCase()}\n\n` +
+                `📚 *Книги:*\n${itemsList}\n\n` +
+                `💰 *Общая сумма:* ${totals.grandTotal} TJS\n` +
+                `⏳ *Мин. предоплата (50%):* ${totals.minPrepay} TJS`;
+
+            const formData = new FormData();
+            formData.append('chat_id', tgSettings.chatId);
+            formData.append('caption', caption);
+            formData.append('parse_mode', 'Markdown');
+            formData.append('photo', receiptFile);
+
+            try {
+                await fetch(`https://api.telegram.org/bot${tgSettings.token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+                alert('Спасибо! Ваш заказ с чеком успешно отправлен!');
+                cart = [];
+                updateCartBadge();
+                closeCartModal();
+            } catch (err) {
+                alert('Ошибка отправки. Проверьте правильность токена бота.');
+            }
+        }
+
+        // --- ADMIN PANEL FUNCTIONS ---
+        function openAdminAuthModal() { document.getElementById('admin-auth-modal').classList.remove('hidden'); }
+        function closeAdminAuthModal() { document.getElementById('admin-auth-modal').classList.add('hidden'); }
+
+        function loginAdmin() {
+            if (document.getElementById('admin-pass-input').value === 'admin123') {
+                closeAdminAuthModal();
+                document.getElementById('admin-panel-modal').classList.remove('hidden');
+                renderAdminBooksList();
+            } else {
+                alert('Неверный пароль!');
+            }
+        }
+        function closeAdminPanelModal() { document.getElementById('admin-panel-modal').classList.add('hidden'); }
+
+        function loadAdminInputs() {
+            document.getElementById('req-dcity').value = paymentReqs.dcity;
+            document.getElementById('req-alif').value = paymentReqs.alif;
+            document.getElementById('req-amonat').value = paymentReqs.amonat;
+            document.getElementById('tg-token-input').value = tgSettings.token;
+            document.getElementById('tg-chatid-input').value = tgSettings.chatId;
+        }
+
+        function renderAdminBooksList() {
+            const listContainer = document.getElementById('admin-books-list');
+            listContainer.innerHTML = '';
+
+            if (books.length === 0) {
+                listContainer.innerHTML = '<p class="text-slate-400 text-center py-2">Нет добавленных книг</p>';
+                return;
+            }
+
+            books.forEach(book => {
+                listContainer.innerHTML += `
+                    <div class="py-2 flex justify-between items-center">
+                        <div>
+                            <span class="font-medium text-slate-700 truncate max-w-[200px] block">${book.title}</span>
+                            <span class="text-[10px] text-blue-600 font-bold">${book.course ? book.course + ' курс' : 'Общая'} | ${book.publisher || 'MEDLIFE'}</span>
+                        </div>
+                        <button onclick="deleteBook(${book.id})" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1 rounded font-bold transition">Удалить</button>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteBook(id) {
+            if (confirm('Вы уверены, что хотите удалить эту книгу из каталога?')) {
+                books = books.filter(b => b.id !== id);
+                localStorage.setItem('mb_books', JSON.stringify(books));
+                renderBooks();
+                renderAdminBooksList();
+            }
+        }
+
+        function addNewBook() {
+            const title = document.getElementById('add-title').value;
+            const publisher = document.getElementById('add-publisher').value || 'MEDLIFE';
+            const course = document.getElementById('add-course').value;
+            const priceBW = parseFloat(document.getElementById('add-price-bw').value || 25);
+            const priceColor = parseFloat(document.getElementById('add-price-color').value || 45);
+            const category = document.getElementById('add-cat').value || 'Учебник';
+            const coverFileInput = document.getElementById('add-cover-file');
+            const sampleFileInput = document.getElementById('add-sample-file');
+
+            if (!title) return alert('Введите название книги');
+
+            const newBook = {
+                id: Date.now(),
+                title,
+                publisher,
+                course,
+                priceBW,
+                priceColor,
+                category,
+                image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=400&q=80',
+                sampleData: null,
+                sampleType: null
+            };
+
+            const processSample = () => {
+                if (sampleFileInput.files && sampleFileInput.files[0]) {
+                    const sampleFile = sampleFileInput.files[0];
+                    const sampleReader = new FileReader();
+                    sampleReader.onload = function(e) {
+                        newBook.sampleData = e.target.result;
+                        newBook.sampleType = sampleFile.type;
+                        saveBook(newBook);
+                    };
+                    sampleReader.readAsDataURL(sampleFile);
+                } else {
+                    saveBook(newBook);
+                }
+            };
+
+            if (coverFileInput.files && coverFileInput.files[0]) {
+                const coverFile = coverFileInput.files[0];
+                const coverReader = new FileReader();
+                coverReader.onload = function(e) {
+                    newBook.image = e.target.result;
+                    processSample();
+                };
+                coverReader.readAsDataURL(coverFile);
+            } else {
+                processSample();
+            }
+        }
+
+        function saveBook(book) {
+            books.push(book);
+            localStorage.setItem('mb_books', JSON.stringify(books));
+            renderBooks();
+            renderAdminBooksList();
+            alert('Книга успешно добавлена!');
+        }
+
+        function saveRequisites() {
+            paymentReqs.dcity = document.getElementById('req-dcity').value;
+            paymentReqs.alif = document.getElementById('req-alif').value;
+            paymentReqs.amonat = document.getElementById('req-amonat').value;
+            localStorage.setItem('mb_reqs', JSON.stringify(paymentReqs));
+            alert('Реквизиты сохранены!');
+        }
+
+        function saveTgSettings() {
+            tgSettings.token = document.getElementById('tg-token-input').value.trim();
+            tgSettings.chatId = document.getElementById('tg-chatid-input').value.trim();
+            localStorage.setItem('mb_tg', JSON.stringify(tgSettings));
+            alert('Настройки Telegram сохранены!');
+        }
+    </script>
+</body>
+</html>
